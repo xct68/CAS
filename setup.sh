@@ -20,14 +20,37 @@ cd $APP_DIR
 # Install npm packages
 npm install
 
+# Configure firewall if UFW is enabled
+if command -v ufw &> /dev/null; then
+    echo "Configuring firewall to allow port 3000..."
+    sudo ufw allow 3000/tcp
+fi
+
 # Start the application using pm2 to keep it running
 sudo npm install -g pm2
 pm2 start index.js --name ctf-platform
 pm2 save
 sudo pm2 startup
 
-echo "-------------------------------------------------------"
-echo "CTF Platform has been installed and started."
-echo "Access it at http://$(hostname -I | awk '{print $1}'):3000"
-echo "Register with username 'admin' to get admin privileges."
-echo "-------------------------------------------------------"
+# Get the server IP address
+SERVER_IP=$(hostname -I | awk '{print $1}')
+
+echo ""
+echo "======================================================="
+echo "✓ CTF Platform has been installed and started."
+echo "======================================================="
+echo "Access it from this machine at:"
+echo "  http://localhost:3000"
+echo ""
+echo "Access it from another machine at:"
+echo "  http://${SERVER_IP}:3000"
+echo ""
+echo "Setup Instructions:"
+echo "  1. Register with username 'admin' to get admin privileges"
+echo "  2. If you can't connect from another machine, check:"
+echo "     - Firewall is allowing port 3000: sudo ufw status"
+echo "     - Server is running: pm2 status"
+echo "     - Network connectivity: ping ${SERVER_IP}"
+echo "======================================================="
+echo ""
+

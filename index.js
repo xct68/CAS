@@ -138,7 +138,31 @@ app.post('/admin/delete-challenge', adminAuth, (req, res) => {
 module.exports = app;
 
 if (require.main === module) {
-    app.listen(port, '0.0.0.0', () => {
-        console.log(`CTF app listening at http://0.0.0.0:${port}`);
+    const server = app.listen(port, '0.0.0.0', () => {
+        const os = require('os');
+        const interfaces = os.networkInterfaces();
+        let ipAddress = '0.0.0.0';
+        
+        for (const name of Object.keys(interfaces)) {
+            for (const iface of interfaces[name]) {
+                if (iface.family === 'IPv4' && !iface.internal) {
+                    ipAddress = iface.address;
+                    break;
+                }
+            }
+        }
+        
+        console.log(`\n✓ CTF Platform is running!`);
+        console.log(`✓ Local Access: http://localhost:${port}`);
+        console.log(`✓ Network Access: http://${ipAddress}:${port}`);
+        console.log(`✓ Register with username 'admin' to get admin privileges.\n`);
+    });
+    
+    server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.error(`✗ Port ${port} is already in use!`);
+            process.exit(1);
+        }
+        throw err;
     });
 }
